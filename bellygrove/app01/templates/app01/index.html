@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: #E3A857;
+            background-size: cover;
+            background-position: center;
+        }
+
+        header {
+            background-color: transparent;
+            color: black;
+            text-align: center;
+            padding: 1em;
+            z-index: 1;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        .product-card {
+            background-image: url("{% static 'app01/images/bombay.jpg' %}");
+            background-size: 100%;
+            background-position: top;
+            position: relative;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 20px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+			font-weight:bold;
+			color:yellow;
+        }
+
+        .product-details {
+            margin-top: 10px;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .product-card img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+.product-card button {
+    padding: 10px;
+    border: none;
+    border-radius: 60%;
+    background-color: beige;
+    color: black;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.product-card button:hover {
+    background-color: #e0c99b;
+}
+
+
+
+
+        .navigation-buttons button {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: lightblue;
+            color: black;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .navigation-buttons button:hover {
+            background-color: #5da2d5;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        /* Add styles for the new block of text */
+        .bottom-text {
+            text-align: center;
+            margin-top: 0px;
+			font-size: 22px;
+			font-style: italic;
+			color: #872419;
+			font-family: American Typewriter, serif;
+			font-weight: bold;
+        }
+#order {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#order:hover {
+    background-color: #45a049;
+}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BellyGrove</h1>
+        <h2 id="productTitle">TUNA SANDWICH</h2>
+    </header>
+    <main>
+        <div class="product-card" id="product1">
+            <img src="{% static 'app01/images/product1.jpg' %}">
+            <p class="product-price">€ 10</p>
+            <button onclick="addToCart()">+</button>
+            <button onclick="removeFromCart()">-</button> 
+        </div>
+		<div id="cartCounts" class="cart-counts"></div>
+
+
+        <div class="navigation-buttons">
+            <button onclick="navigateProduct(-1)">Previous</button>
+            <button onclick="navigateProduct(1)">Next</button>
+        </div>
+
+        <!-- New block of text at the bottom and center of the page -->
+        <div class="bottom-text" id="bottomText">
+            **TUNA**
+        </div>
+		<button onclick="checkout()" id="order">ORDER</button>
+    </main>
+
+    <script>
+        var currentProduct = 0;
+		var shoppingCart = [];
+        const products = ["TUNA SANDWICH", "FRENCH TOAST", "PAV BHAJI", "CHANA MASALA", "SHAHI PANEER", "CHICKEN SHAWARMA", "BUTTER CHICKEN"];
+        const prices = [10, 10, 10, 10, 20, 20, 20];
+		const desc = ["**TUNA**","**FRENCH**","**PAV**","**CHANA**","**SHAHI**","**CHICKEN**","**BC**"]
+		const count = [0,0,0,0,0,0,0];
+
+        function openProductPage(product) {
+            currentProduct = parseInt(product.match(/\d+/)[0]) - 1;
+
+            var productCard = document.getElementById('product1');
+            var productImage = productCard.querySelector('img');
+            var productHeader = document.getElementById('productTitle');
+            var productDetails = productCard.querySelector('.product-price');
+
+            productImage.src = "{% static 'app01/images/product' %}" + (currentProduct + 1) + ".jpg";
+            productHeader.innerText = products[currentProduct];
+            productDetails.innerText = "€ "+prices[currentProduct];
+
+            var bottomText = document.getElementById('bottomText');
+            bottomText.innerText = desc[currentProduct];
+        }
+function updateCartCounts() {
+    var cartCountsElement = document.getElementById('cartCounts');
+    var countsHTML = '';
+    
+    for (var i = 0; i < products.length; i++) {
+        if (count[i] > 0) {
+            countsHTML += products[i] + ': ' + count[i] + '<br>';
+        }
+    }
+
+    cartCountsElement.innerHTML = countsHTML;
+	
+}
+
+function addToCart() {
+    // Check if the current product already exists in the shopping cart
+	count[currentProduct] = count[currentProduct] + 1;
+    var existingProductIndex = shoppingCart.findIndex(function(item) {
+        return item.name === products[currentProduct];
+    });
+
+    if (existingProductIndex !== -1) {
+        // If the product already exists, update the count by 1
+        shoppingCart[existingProductIndex].count += 1;
+        alert(products[currentProduct] + " count updated in the cart!");
+    } else {
+        // If the product does not exist, add a new entry to the cart
+        var selectedProduct = {
+            name: products[currentProduct],
+            price: prices[currentProduct],
+            count: 1,
+        };
+        shoppingCart.push(selectedProduct);
+        alert(selectedProduct.name + " added to the cart!");
+    }
+
+    // Call a function to update the counts in the cart (assuming it exists)
+    updateCartCounts();
+}
+
+function removeFromCart() {
+    if (shoppingCart.length === 0) {
+        alert("Your shopping cart is empty. Add some products before removing!");
+    } else {
+        var removedIndex = -1;
+
+        // Find the index of the matched product in the shopping cart
+        for (var i = 0; i < shoppingCart.length; i++) {
+            if (shoppingCart[i].name == products[currentProduct]) {
+                removedIndex = i;
+                break;
+            }
+        }
+
+        if (removedIndex !== -1) {
+            var removedProduct = shoppingCart[removedIndex];
+            
+            // Check if the count is greater than 1 before decrementing
+            if (removedProduct.count > 1) {
+                removedProduct.count -= 1;
+                alert(removedProduct.name + " count reduced by 1 in the cart!");
+            } else {
+                // If count is 1, you may want to remove the product entirely
+                shoppingCart.splice(removedIndex, 1);
+                alert(removedProduct.name + " removed from the cart!");
+            }
+
+            // Update counts or perform other necessary actions
+            count[currentProduct] = count[currentProduct] - 1;
+            updateCartCounts();
+        } else {
+            alert("The selected product is not in the shopping cart.");
+        }
+    }
+}
+
+function checkout() {
+    if (shoppingCart.length === 0) {
+        alert("Your shopping cart is empty. Add some products before checking out!");
+    } else {
+		
+        alert("Redirecting you to checkout...");
+
+    fetch('', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            shoppingCart: shoppingCart,
+            counts: count,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response if needed
+        console.log(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+		
+        shoppingCart = [];
+        count.fill(0); // Reset item counts
+		
+		
+		
+		window.location.href = '{% url "details" %}';
+        updateCartCounts();		
+    }
+}
+
+
+        function navigateProduct(direction) {
+            currentProduct += direction;
+
+            if (currentProduct < 0) {
+                currentProduct = products.length - 1;
+            } else if (currentProduct >= products.length) {
+                currentProduct = 0;
+            }
+
+            openProductPage('product' + (currentProduct + 1));
+        }
+
+    </script>
+</body>
+</html>
